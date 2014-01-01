@@ -1,9 +1,7 @@
-# FreeRDP: A Remote Desktop Protocol Client
+# FreeRDP: A Remote Desktop Protocol Implementation
 # FreeRDP Servers
 #
-# Copyright 2011 O.S. Systems Software Ltda.
-# Copyright 2011 Otavio Salvador <otavio@ossystems.com.br>
-# Copyright 2011 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+# Copyright 2012 Marc-Andre Moreau <marcandre.moreau@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,15 +17,46 @@
 
 # Servers
 
+add_subdirectory(common)
+
+if(WITH_SAMPLE)
+	add_subdirectory(Sample)
+endif()
+
 if(NOT WIN32)
-
-	# Build Test Server
-	add_subdirectory(test)
-
-	# Build X11 Server
-	find_suggested_package(X11)
 	if(WITH_X11)
 		add_subdirectory(X11)
 	endif()
-	
+
+	if(APPLE AND (NOT IOS))
+		add_subdirectory(Mac)
+	endif()
+else()
+	add_subdirectory(Windows)
 endif()
+
+if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/FreeRDS")
+	add_subdirectory("FreeRDS")
+endif()
+
+# Pick up other clients
+
+set(FILENAME "ModuleOptions.cmake")
+file(GLOB FILEPATHS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*/${FILENAME}")
+
+foreach(FILEPATH ${FILEPATHS})
+	if(${FILEPATH} MATCHES "^([^/]*)//${FILENAME}")
+		string(REGEX REPLACE "^([^/]*)//${FILENAME}" "\\1" FREERDP_SERVER ${FILEPATH})
+		set(FREERDP_SERVER_ENABLED 0)
+		include(${FILEPATH})
+		if(FREERDP_SERVER_ENABLED)
+			if(NOT (${FREERDP_SERVER_VENDOR} MATCHES "FreeRDP"))
+				list(APPEND FREERDP_EXTRA_SERVERS ${FREERDP_SERVER})
+			endif()
+		endif()
+	endif()
+endforeach()
+
+foreach(FREERDP_SERVER ${FREERDP_EXTRA_SERVERS})
+	add_subdirectory(${FREERDP_SERVER})
+endforeach()

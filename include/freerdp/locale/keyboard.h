@@ -17,13 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef __FREERDP_LOCALE_KEYBOARD_H
-#define __FREERDP_LOCALE_KEYBOARD_H
+#ifndef FREERDP_LOCALE_KEYBOARD_H
+#define FREERDP_LOCALE_KEYBOARD_H
+
+#include <winpr/input.h>
 
 #include <freerdp/api.h>
 #include <freerdp/types.h>
-#include <freerdp/locale/virtual_key_codes.h>
-#include <freerdp/keyboard_scancode.h>
+#include <freerdp/scancode.h>
 
 #define RDP_KEYBOARD_LAYOUT_TYPE_STANDARD   1
 #define RDP_KEYBOARD_LAYOUT_TYPE_VARIANT    2
@@ -31,7 +32,7 @@
 
 struct _RDP_KEYBOARD_LAYOUT
 {
-	uint32 code; /* Keyboard layout code */
+	DWORD code; /* Keyboard layout code */
 	char* name; /* Keyboard layout name */
 };
 typedef struct _RDP_KEYBOARD_LAYOUT RDP_KEYBOARD_LAYOUT;
@@ -189,11 +190,29 @@ typedef struct _RDP_KEYBOARD_LAYOUT RDP_KEYBOARD_LAYOUT;
 #define KBD_CHINESE_TRADITIONAL_MICROSOFT_PINYIN_IME_3		0xE00E0804
 #define KBD_CHINESE_TRADITIONAL_ALPHANUMERIC			0xE00F0404
 
-FREERDP_API uint32 freerdp_keyboard_init(uint32 keyboardLayoutId);
-FREERDP_API RDP_KEYBOARD_LAYOUT* freerdp_keyboard_get_layouts(uint32 types);
-FREERDP_API const char* freerdp_keyboard_get_layout_name_from_id(uint32 keyboardLayoutId);
-FREERDP_API RDP_SCANCODE freerdp_keyboard_get_rdp_scancode_from_x11_keycode(uint32 keycode);
-FREERDP_API uint32 freerdp_keyboard_get_x11_keycode_from_rdp_scancode(uint32 scancode, boolean extended);
-FREERDP_API RDP_SCANCODE freerdp_keyboard_get_rdp_scancode_from_virtual_key_code(uint32 vkcode);
+/* Keyboard Types */
+#define KBD_TYPE_IBM_PC_XT					0x00000001 /* IBM PC/XT or compatible (83-key) keyboard */
+#define KBD_TYPE_OLIVETTI_ICO					0x00000002 /* Olivetti "ICO" (102-key) keyboard */
+#define KBD_TYPE_IBM_PC_AT					0x00000003 /* IBM PC/AT (84-key) and similar keyboards */
+#define KBD_TYPE_IBM_ENHANCED					0x00000004 /* IBM enhanced (101-key or 102-key) keyboard */
+#define KBD_TYPE_NOKIA_1050					0x00000005 /* Nokia 1050 and similar keyboards */
+#define KBD_TYPE_NOKIA_9140					0x00000006 /* Nokia 9140 and similar keyboards */
+#define KBD_TYPE_JAPANESE					0x00000007 /* Japanese keyboard */
 
-#endif /* __FREERDP_LOCALE_KEYBOARD_H */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+FREERDP_API DWORD freerdp_keyboard_init(DWORD keyboardLayoutId);
+FREERDP_API RDP_KEYBOARD_LAYOUT* freerdp_keyboard_get_layouts(DWORD types);
+FREERDP_API void freerdp_keyboard_layouts_free(RDP_KEYBOARD_LAYOUT* layouts);
+FREERDP_API const char* freerdp_keyboard_get_layout_name_from_id(DWORD keyboardLayoutId);
+FREERDP_API DWORD freerdp_keyboard_get_layout_id_from_name(const char* name);
+FREERDP_API DWORD freerdp_keyboard_get_rdp_scancode_from_x11_keycode(DWORD keycode);
+FREERDP_API DWORD freerdp_keyboard_get_x11_keycode_from_rdp_scancode(DWORD scancode, BOOL extended);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* FREERDP_LOCALE_KEYBOARD_H */
